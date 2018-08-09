@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="b09b4d3f-35a3-46d9-8a82-e83cfa690d63" name="TelemetryDev" url="http://localhost/telemetryui">
+        <fileTransfer port="0" mountedRoot="/var/www/telemetry" accessType="MOUNT" />
+      </webServer>
+      <webServer id="307dd5e5-e7f3-495a-83d0-d8608be2dcf4" name="TelemetryBase" url="http://localhost">
+        <fileTransfer port="0" mountedRoot="/var/base/www/telemetry" accessType="MOUNT" />
+      </webServer>
+    </option>
+  </component>
+</project>

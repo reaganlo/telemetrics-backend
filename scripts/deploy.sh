@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-REMOTE_APP_DIR="/var/www/telemetry"
+REMOTE_APP_DIR="/var/www/telemetrynew"
 DEBIAN_PKGS="build-essential python3 python3-dev python3-pip virtualenv libpq-dev nginx git uwsgi uwsgi-plugin-python3"
 REDHAT_PKGS="gcc gcc-c++ make python34 python34-devel python34-pip python34-virtualenv postgresql-devel postgresql-server postgresql-contrib nginx git policycoreutils-python uwsgi uwsgi-plugin-python3"
 CLR_BUNDLES="application-server database-basic database-basic-dev python-basic os-core-dev web-server-basic"
@@ -372,7 +372,7 @@ _get_db_pass() {
     exit 1
   fi
 
-  pass=$(sed -n -e 's|^.*SQLALCHEMY_DATABASE_URI.*postgres://postgres:\(.*\)@localhost/telemdb.*|\1|p' $conf)
+  pass=$(sed -n -e 's|^.*SQLALCHEMY_DATABASE_URI.*postgres://postgres:\(.*\)@localhost/telemetry.*|\1|p' $conf)
   echo "$pass"
 }
 
@@ -542,14 +542,14 @@ _set_db_pass() {
 }
 
 _drop_db() {
-  sudo -u postgres dropdb telemdb
+  sudo -u postgres dropdb telemetry
 }
 
 _create_db() {
   local scripts_path="/tmp/$REPO_NAME/scripts"
 
   # First, detect if the database already exists. If so, nothing to do here.
-  sudo -u postgres psql --list --pset format=unaligned | grep -q '^telemdb|'
+  sudo -u postgres psql --list --pset format=unaligned | grep -q '^telemetry|'
   if [ $? -eq 0 ]; then
     return 0
   fi
@@ -559,11 +559,11 @@ _create_db() {
     export DB_PASSWORD
   fi
 
-  sudo -u postgres createdb telemdb > /dev/null 2>&1
+  sudo -u postgres createdb telemetry > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     sudo -u postgres psql template1 -c "ALTER USER postgres with encrypted password '$DB_PASSWORD';"
   else
-    error "failed to create telemdb Postgres database"
+    error "failed to create telemetry Postgres database"
     _drop_db
     exit 1
   fi
