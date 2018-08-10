@@ -23,8 +23,8 @@ DB_PASSWORD=""
 NGINX_USER=""
 NGINX_GROUP=""
 REPO_NAME="telemetrics-backend"
-COLLECTOR_INI="collector_uwsgi.ini"
-TELEMETRYUI_INI="telemetryui_uwsgi.ini"
+COLLECTOR_INI="collectornew_uwsgi.ini"
+TELEMETRYUI_INI="telemetryuinew_uwsgi.ini"
 SPOOL_DIR="uwsgi-spool"
 APT_GET_INSTALL="DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::=\"--force-confnew\""
 APT_GET_REMOVE="DEBIAN_FRONTEND=noninteractive apt-get remove -y -o Dpkg::=\"--force-confnew\""
@@ -508,8 +508,8 @@ _deploy() {
 
   # Misc uwsgi config
   sudo mkdir -pv /etc/uwsgi/vassals
-  sudo ln -sf $REMOTE_APP_DIR/telemetryui/telemetryui_uwsgi.ini /etc/uwsgi/vassals/
-  sudo ln -sf $REMOTE_APP_DIR/collector/collector_uwsgi.ini /etc/uwsgi/vassals/
+  sudo ln -sf $REMOTE_APP_DIR/telemetryui/telemetryuinew_uwsgi.ini /etc/uwsgi/vassals/
+  sudo ln -sf $REMOTE_APP_DIR/collector/collectornew_uwsgi.ini /etc/uwsgi/vassals/
   sudo systemctl enable uwsgi
 
   # Cert configuration
