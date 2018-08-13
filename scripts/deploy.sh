@@ -23,7 +23,6 @@ DB_PASSWORD=""
 NGINX_USER=""
 NGINX_GROUP=""
 REPO_NAME="telemetrics-backend"
-COLLECTOR_INI="collector_uwsgi.ini"
 TELEMETRYUI_INI="telemetryui_uwsgi.ini"
 SPOOL_DIR="uwsgi-spool"
 APT_GET_INSTALL="DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::=\"--force-confnew\""
@@ -321,7 +320,6 @@ _stage_from_git() {
     cd $path
     rm -rf $REPO_NAME
     git clone -b $branch $REPO_LOCATION
-    rm -f $REPO_NAME/collector/collector/config_local.py
     rm -f $REPO_NAME/telemetryui/telemetryui/config_local.py
     tar -czf backend_local.tar.gz $REPO_NAME
   )
@@ -359,7 +357,6 @@ EOF
 
 _get_db_pass() {
   local pass
-  local conf=$REMOTE_APP_DIR/collector/collector/config.py
 
   if [ ! -f $conf ]; then
     error "missing config.py file; must run the 'install' action first"
@@ -449,7 +446,6 @@ _get_flask_key() {
 
 _deploy() {
   local repo="/tmp/$REPO_NAME"
-  local collector_path="$repo/collector"
   local telemetryui_path="$repo/telemetryui"
   local shared_path="$repo/shared"
   local scripts_path="$repo/scripts"
@@ -469,8 +465,7 @@ _deploy() {
   mv /tmp/backend_local.tar.gz /tmp/backend.tar.gz
   tar -C /tmp/ -xf /tmp/backend.tar.gz
 
-  # Finalize configuration for collector and telemetryui
-  _subst_config "$scripts_path/$COLLECTOR_INI" "$collector_path/"
+  # Finalize configuration for telemetryui
   _subst_config "$scripts_path/$TELEMETRYUI_INI" "$telemetryui_path/"
   _subst_config "$scripts_path/uwsgi.conf"
   _subst_config "$scripts_path/sites_nginx.conf"
@@ -479,12 +474,7 @@ _deploy() {
   _subst_config "$scripts_path/uwsgi.service"
 
   # Finalize configuration for postgres
-  _subst_config "$collector_path/collector/config.py"
   _subst_config "$telemetryui_path/telemetryui/config.py"
-
-  # Install collector + spooldir
-  sudo cp -af $collector_path $REMOTE_APP_DIR/
-  sudo mkdir -pv $REMOTE_APP_DIR/collector/$SPOOL_DIR
 
   # Install telemetryui + spooldir
   sudo cp -af $telemetryui_path $REMOTE_APP_DIR/
@@ -500,7 +490,6 @@ _deploy() {
   _config_uwsgi_${DISTRO}
 
   # Fix up permissions
-  sudo chown -R $NGINX_USER:$NGINX_GROUP $REMOTE_APP_DIR/collector
   sudo chown -R $NGINX_USER:$NGINX_GROUP $REMOTE_APP_DIR/telemetryui
 
   # Modify existing nginx config
@@ -509,7 +498,6 @@ _deploy() {
   # Misc uwsgi config
   sudo mkdir -pv /etc/uwsgi/vassals
   sudo ln -sf $REMOTE_APP_DIR/telemetryui/telemetryui_uwsgi.ini /etc/uwsgi/vassals/
-  sudo ln -sf $REMOTE_APP_DIR/collector/collector_uwsgi.ini /etc/uwsgi/vassals/
   sudo systemctl enable uwsgi
 
   # Cert configuration
@@ -570,9 +558,7 @@ _create_db() {
 }
 
 _update_db_pass() {
-  local src_collector_path="/tmp/$REPO_NAME/collector"
   local src_telemetryui_path="/tmp/$REPO_NAME/telemetryui"
-  local dest_collector_path="$REMOTE_APP_DIR/collector"
   local dest_telemetryui_path="$REMOTE_APP_DIR/telemetryui"
 
   if [ -z "$DB_PASSWORD" ]; then
@@ -581,15 +567,9 @@ _update_db_pass() {
   fi
 
   # Restore the template files from the backups first
-  if [ -f $src_collector_path/config.py.backup ]; then
-    mv $src_collector_path/config.py.backup $src_collector_path/config.py
-  fi
   if [ -f $src_telemetryui_path/config.py.backup ]; then
     mv $src_telemetryui_path/config.py.backup $src_telemetryui_path/config.py
   fi
-
-  _subst_config "$src_collector_path/config.py" "$dest_collector_path/"
-  _subst_config "$src_telemetryui_path/config.py" "$dest_telemetryui_path/"
 }
 
 do_install() {
