@@ -98,7 +98,7 @@ $ ./deploy.sh -H localhost -d clr -a install
 During script execution, you will be prompted for user input:
 
 * The first prompt begins with "DB password:", asking for a password to set for
-  the `telemdb` database. If you do not enter a value before pressing ENTER,
+  the `telemetry` database. If you do not enter a value before pressing ENTER,
   the password will be `postgres`.
 
 * If your sudo access requires a password, you will be prompted for that
@@ -131,7 +131,7 @@ telemetry data and also provides a REST API to perform queries on record data.
 
 The current views are:
 
-* Records view - a paginated list of all records in the `telemdb` database that
+* Records view - a paginated list of all records in the `telemetry` database that
   have been accepted by the `collector`. The records are presented in tabular
   format and the columns map to select fields from the `records` database table.
   At the top of the view, an HTML form can be used for "advanced searches",
@@ -295,7 +295,7 @@ Database migrations are managed using
 [Flask-Migrate](https://flask-migrate.readthedocs.io/en/latest/). Upon initial
 install of telemetrics-backend, the first migration will be applied, and any
 additional migrations in the `telemetryui/migrations/versions/` directory will
-be applied in sequence and upgrade the `telemdb` schema to the latest version.
+be applied in sequence and upgrade the `telemetry` schema to the latest version.
 
 To create a new migration, you can follow the steps below:
 
