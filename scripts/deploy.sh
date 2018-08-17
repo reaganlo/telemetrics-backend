@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-REMOTE_APP_DIR="/var/www/telemetry"
+REMOTE_APP_DIR="/var/www/telemetry_backend"
 DEBIAN_PKGS="build-essential python3 python3-dev python3-pip virtualenv libpq-dev nginx git uwsgi uwsgi-plugin-python3"
 REDHAT_PKGS="gcc gcc-c++ make python34 python34-devel python34-pip python34-virtualenv postgresql-devel postgresql-server postgresql-contrib nginx git policycoreutils-python uwsgi uwsgi-plugin-python3"
 CLR_BUNDLES="application-server database-basic database-basic-dev python-basic os-core-dev web-server-basic"
@@ -23,7 +23,7 @@ DB_PASSWORD=""
 NGINX_USER=""
 NGINX_GROUP=""
 REPO_NAME="telemetrics-backend"
-TELEMETRYUI_INI="telemetryui_uwsgi.ini"
+TELEMETRYUI_INI="test_telemetryui_uwsgi.ini"
 SPOOL_DIR="uwsgi-spool"
 APT_GET_INSTALL="DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::=\"--force-confnew\""
 APT_GET_REMOVE="DEBIAN_FRONTEND=noninteractive apt-get remove -y -o Dpkg::=\"--force-confnew\""
@@ -375,22 +375,22 @@ _get_db_pass() {
 
 _config_nginx_ubuntu() {
   sudo rm -f /etc/nginx/sites-enabled/default
-  sudo rm -f /etc/nginx/sites-enabled/sites_nginx.conf
-  sudo ln -sf $REMOTE_APP_DIR/sites_nginx.conf /etc/nginx/sites-enabled/
+  sudo rm -f /etc/nginx/sites-enabled/test_sites_nginx.conf
+  sudo ln -sf $REMOTE_APP_DIR/test_sites_nginx.conf /etc/nginx/sites-enabled/
 }
 
 _config_nginx_clr() {
   sudo mkdir -pv /etc/nginx/conf.d
   sudo cp -av /usr/share/nginx/conf/nginx.conf.example /etc/nginx/nginx.conf
-  sudo ln -sf $REMOTE_APP_DIR/sites_nginx.conf /etc/nginx/conf.d/
+  sudo ln -sf $REMOTE_APP_DIR/test_sites_nginx.conf /etc/nginx/conf.d/
   sudo systemctl enable nginx
 }
 
 _config_nginx_centos() {
   sudo mkdir -pv /etc/nginx/conf.d
   sudo cp -av $scripts_path/nginx.conf /etc/nginx/nginx.conf
-  sudo ln -sf $REMOTE_APP_DIR/sites_nginx.conf /etc/nginx/conf.d/
-  sudo chcon -t httpd_config_t $REMOTE_APP_DIR/sites_nginx.conf
+  sudo ln -sf $REMOTE_APP_DIR/test_sites_nginx.conf /etc/nginx/conf.d/
+  sudo chcon -t httpd_config_t $REMOTE_APP_DIR/test_sites_nginx.conf
   sudo systemctl enable nginx
 }
 
@@ -468,7 +468,7 @@ _deploy() {
   # Finalize configuration for telemetryui
   _subst_config "$scripts_path/$TELEMETRYUI_INI" "$telemetryui_path/"
   _subst_config "$scripts_path/uwsgi.conf"
-  _subst_config "$scripts_path/sites_nginx.conf"
+  _subst_config "$scripts_path/test_sites_nginx.conf"
   # get uwsgi location, in case this was installed during script exec
   UWSGI_PATH=$(type -p uwsgi)
   _subst_config "$scripts_path/uwsgi.service"
@@ -484,7 +484,7 @@ _deploy() {
   sudo cp -af $shared_path $REMOTE_APP_DIR/
 
   # Install nginx config
-  sudo cp -af $scripts_path/sites_nginx.conf $REMOTE_APP_DIR/
+  sudo cp -af $scripts_path/test_sites_nginx.conf $REMOTE_APP_DIR/
 
   # Install uwsgi config
   _config_uwsgi_${DISTRO}
@@ -497,12 +497,12 @@ _deploy() {
 
   # Misc uwsgi config
   sudo mkdir -pv /etc/uwsgi/vassals
-  sudo ln -sf $REMOTE_APP_DIR/telemetryui/telemetryui_uwsgi.ini /etc/uwsgi/vassals/
+  sudo ln -sf $REMOTE_APP_DIR/telemetryui/test_telemetryui_uwsgi.ini /etc/uwsgi/vassals/
   sudo systemctl enable uwsgi
 
   # Cert configuration
   if [ ! -f /etc/nginx/ssl/telemetry.cert.pem ]; then
-    sudo sed -i.backup 's/\(ssl_.*\)/# \1/;s/\(listen.*443 ssl\)/# \1/' $REMOTE_APP_DIR/sites_nginx.conf
+    sudo sed -i.backup 's/\(ssl_.*\)/# \1/;s/\(listen.*443 ssl\)/# \1/' $REMOTE_APP_DIR/test_sites_nginx.conf
   fi
 }
 
@@ -626,7 +626,7 @@ _uninstall_ubuntu_pkgs() {
 
 do_uninstall() {
   _drop_db
-  sudo rm -fv /etc/nginx/sites-enabled/sites_nginx.conf
+  sudo rm -fv /etc/nginx/sites-enabled/test_sites_nginx.conf
   sudo rm -fv /etc/nginx/sites-enabled/default
   sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
